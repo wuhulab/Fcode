@@ -1,8 +1,3 @@
-"""
-FoxCode - 简约手机IDE
-基于 Flask + Monaco Editor 的轻量级代码编辑器
-"""
-
 import os
 import sys
 import threading
@@ -10,6 +5,9 @@ import logging
 import subprocess
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_socketio import SocketIO, emit
+# 不要把这些超长换行给删掉，知不知道?删掉我不会合并你的分支
+
+
 
 # 配置日志记录
 logging.basicConfig(
@@ -18,8 +16,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'foxcode_ide_secret_key'
+app.config['SECRET_KEY'] = 'foxcode_ide_secdhjdbnbshbsnhsbsbsgshxryd62838646'
 
 # 初始化 SocketIO
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
@@ -28,6 +28,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 DEFAULT_WORKSPACE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'workspace')
 _workspace_root = None
 _workspace_lock = threading.Lock()
+
 
 
 def get_workspace_root():
@@ -49,9 +50,10 @@ if not os.path.exists(DEFAULT_WORKSPACE):
     os.makedirs(DEFAULT_WORKSPACE)
     logger.info(f"创建默认工作目录: {DEFAULT_WORKSPACE}")
 
+
+
 # 设置默认工作目录
 set_workspace_root(DEFAULT_WORKSPACE)
-
 
 def normalize_path(input_path):
     """
@@ -116,17 +118,17 @@ def normalize_path(input_path):
         raise ValueError(f"访问被拒绝：路径超出工作范围")
     
     return normalized
-
-
+    
+# 谁要是再敢把这种头部函数写到里面，我就拒绝他的分支
+# 渲染主页面
 @app.route('/')
-def index():
-    """渲染主页面"""
+def index()
     return render_template('index.html')
 
 
+# 查询当前工作目录状态
 @app.route('/api/workspace/status', methods=['GET'])
 def workspace_status():
-    """查询当前工作目录状态"""
     workspace_root = get_workspace_root()
     if workspace_root:
         return jsonify({
@@ -148,12 +150,9 @@ def workspace_status():
         })
 
 
+# 设置工作目录（项目文件夹）
 @app.route('/api/workspace/set', methods=['POST'])
-def set_workspace():
-    """
-    设置工作目录（项目文件夹）
-    接受用户输入的绝对路径，验证后设为当前工作目录
-    """
+def set_workspace()
     try:
         data = request.get_json()
         if not data:
@@ -194,13 +193,9 @@ def set_workspace():
         logger.error(f"设置工作目录失败: {str(e)}")
         return jsonify({'error': f'设置失败: {str(e)}'}), 500
 
-
+# 浏览文件系统目录，用于辅助用户选择项目文件夹 （准备弃用）
 @app.route('/api/workspace/browse', methods=['GET'])
 def browse_directory():
-    """
-    浏览文件系统目录，用于辅助用户选择项目文件夹
-    返回指定路径下的子目录列表
-    """
     try:
         raw_path = request.args.get('path', '').strip()
         
@@ -254,13 +249,9 @@ def browse_directory():
         logger.error(f"浏览目录失败: {str(e)}")
         return jsonify({'error': f'浏览失败: {str(e)}'}), 500
 
-
+# 文件结构
 @app.route('/api/files', methods=['GET'])
 def get_files():
-    """
-    获取文件树结构
-    支持参数: path (可选，指定目录路径)
-    """
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -285,6 +276,7 @@ def get_files():
         return jsonify({'error': f'服务器错误: {str(e)}'}), 500
 
 
+# 递归构建文件树结构
 def build_file_tree(root_path, max_depth=3, current_depth=0):
     """
     递归构建文件树结构
@@ -363,10 +355,9 @@ def build_file_tree(root_path, max_depth=3, current_depth=0):
     
     return tree
 
-
+# 读取文件内容
 @app.route('/api/file/read', methods=['GET'])
 def read_file():
-    """读取文件内容"""
     try:
         raw_path = request.args.get('path')
         if not raw_path:
@@ -399,10 +390,9 @@ def read_file():
         logger.error(f"读取文件失败: {str(e)}")
         return jsonify({'error': f'读取失败: {str(e)}'}), 500
 
-
+# 写入/保存文件内容
 @app.route('/api/file/write', methods=['POST'])
 def write_file():
-    """写入/保存文件内容"""
     try:
         data = request.get_json()
         raw_path = data.get('path')
@@ -433,10 +423,9 @@ def write_file():
         logger.error(f"保存文件失败: {str(e)}")
         return jsonify({'error': f'保存失败: {str(e)}'}), 500
 
-
+# 创建新文件或文件夹
 @app.route('/api/file/create', methods=['POST'])
 def create_file():
-    """创建新文件或文件夹"""
     try:
         data = request.get_json()
         if not data:
@@ -509,10 +498,9 @@ def create_file():
         logger.error(f"创建失败: {str(e)}", exc_info=True)
         return jsonify({'error': f'创建失败: {str(e)}'}), 500
 
-
+# 删除文件或文件夹
 @app.route('/api/file/delete', methods=['DELETE'])
 def delete_file():
-    """删除文件或文件夹"""
     try:
         raw_path = request.args.get('path')
         if not raw_path:
@@ -536,10 +524,9 @@ def delete_file():
         logger.error(f"删除失败: {str(e)}")
         return jsonify({'error': f'删除失败: {str(e)}'}), 500
 
-
+# 重命名文件或文件夹
 @app.route('/api/file/rename', methods=['PUT'])
 def rename_file():
-    """重命名文件或文件夹"""
     try:
         data = request.get_json()
         raw_old_path = data.get('oldPath')
@@ -564,11 +551,11 @@ def rename_file():
         logger.error(f"重命名失败: {str(e)}")
         return jsonify({'error': f'重命名失败: {str(e)}'}), 500
 
-
+# 运行文件（bug)
 @app.route('/api/file/run', methods=['POST'])
 def run_file():
     """
-    运行文件
+    
     根据文件类型执行相应的运行命令
     
     安全改进：
@@ -723,8 +710,8 @@ def run_file():
 # 终端会话状态：存储每个终端的工作目录
 _terminal_sessions = {}
 
+# 生成终端显示的目录路径
 def _get_display_dir(cwd, workspace_root):
-    """生成终端显示的目录路径"""
     try:
         display_dir = os.path.relpath(cwd, os.path.dirname(workspace_root))
         if display_dir == '.' or display_dir.startswith('..'):
@@ -732,22 +719,22 @@ def _get_display_dir(cwd, workspace_root):
     except ValueError:
         display_dir = os.path.basename(cwd) or cwd
     return display_dir
-
+    
+# 获取终端会话的当前工作目录
 def _get_terminal_cwd(session_id):
-    """获取终端会话的当前工作目录"""
     if session_id and session_id in _terminal_sessions:
         return _terminal_sessions[session_id]
     return None
-
+    
+# 设置终端会话的当前工作目录
 def _set_terminal_cwd(session_id, cwd):
-    """设置终端会话的当前工作目录"""
     if session_id:
         _terminal_sessions[session_id] = cwd
-
+        
+# 执行终端命令(bug)
 @app.route('/api/terminal/execute', methods=['POST'])
 def terminal_execute():
     """
-    执行终端命令
     在工作目录中执行命令并返回结果
     
     改进：
@@ -982,9 +969,8 @@ except ImportError:
 _pty_processes = {}  # sid -> { process, read_thread, alive }
 _pty_lock = threading.Lock()
 
-
+# 安全终止 PTY 进程
 def _kill_pty_process(pty_process):
-    """安全终止 PTY 进程"""
     try:
         if hasattr(pty_process, 'cancel_io'):
             pty_process.cancel_io()
@@ -1007,9 +993,8 @@ def _kill_pty_process(pty_process):
     except Exception:
         pass
 
-
+# 在后台线程中持续读取 PTY 输出并通过 WebSocket 推送
 def _read_pty_output(sid, pty_process):
-    """在后台线程中持续读取 PTY 输出并通过 WebSocket 推送"""
     try:
         while _pty_processes.get(sid, {}).get('alive', False):
             try:
@@ -1068,10 +1053,9 @@ def handle_disconnect():
                 pass
             del _pty_processes[sid]
 
-
+# 创建新的 PTY 终端会话
 @socketio.on('terminal_create')
 def handle_terminal_create(data):
-    """创建新的 PTY 终端会话"""
     sid = request.sid
     workspace_root = get_workspace_root()
     cwd = data.get('cwd', '') if data else ''
@@ -1180,10 +1164,9 @@ def handle_terminal_create(data):
         logger.error(f"创建 PTY 终端失败: {str(e)}")
         emit('terminal_error', {'message': f'创建终端失败: {str(e)}'})
 
-
+# 接收终端输入并发送到 PTY 进程
 @socketio.on('terminal_input')
 def handle_terminal_input(data):
-    """接收终端输入并发送到 PTY 进程"""
     sid = request.sid
     input_data = data.get('data', '') if data else ''
     
@@ -1194,10 +1177,9 @@ def handle_terminal_input(data):
             except Exception as e:
                 logger.error(f"写入 PTY 失败: {str(e)}")
 
-
+# 调整终端大小
 @socketio.on('terminal_resize')
 def handle_terminal_resize(data):
-    """调整终端大小"""
     sid = request.sid
     cols = data.get('cols', 80) if data else 80
     rows = data.get('rows', 24) if data else 24
@@ -1226,10 +1208,12 @@ def handle_terminal_kill():
     logger.info(f"PTY 终端已终止: {sid}")
 
 
+
+
 # ========== Git API ==========
+# 获取Git仓库状态
 @app.route('/api/git/status', methods=['GET'])
 def git_status():
-    """获取Git仓库状态"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1306,10 +1290,9 @@ def git_status():
         logger.error(f"Git状态获取失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-
+# 获取Git提交历史
 @app.route('/api/git/log', methods=['GET'])
 def git_log():
-    """获取Git提交历史"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1360,10 +1343,9 @@ def git_log():
         logger.error(f"Git日志获取失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-
+# 初始化Git仓库
 @app.route('/api/git/init', methods=['POST'])
 def git_init():
-    """初始化Git仓库"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1391,10 +1373,9 @@ def git_init():
         logger.error(f"Git初始化失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-
+# 添加文件到暂存区
 @app.route('/api/git/add', methods=['POST'])
 def git_add():
-    """添加文件到暂存区"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1426,10 +1407,9 @@ def git_add():
         logger.error(f"Git添加失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-
+ # 提交更改
 @app.route('/api/git/commit', methods=['POST'])
 def git_commit():
-    """提交更改"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1463,10 +1443,9 @@ def git_commit():
         logger.error(f"Git提交失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-
+# 推送到远程仓库
 @app.route('/api/git/push', methods=['POST'])
 def git_push():
-    """推送到远程仓库"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1504,11 +1483,10 @@ def git_push():
     except Exception as e:
         logger.error(f"Git推送失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
-
-
+        
+# 从远程仓库拉取
 @app.route('/api/git/pull', methods=['POST'])
 def git_pull():
-    """从远程仓库拉取"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1539,10 +1517,9 @@ def git_pull():
         logger.error(f"Git拉取失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-
+# 获取分支列表
 @app.route('/api/git/branch', methods=['GET'])
 def git_branch():
-    """获取分支列表"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1584,10 +1561,9 @@ def git_branch():
         logger.error(f"Git分支获取失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
 
-
+# 切换分支
 @app.route('/api/git/checkout', methods=['POST'])
 def git_checkout():
-    """切换分支"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
@@ -1620,11 +1596,10 @@ def git_checkout():
     except Exception as e:
         logger.error(f"Git切换分支失败: {str(e)}")
         return jsonify({'error': str(e), 'success': False}), 500
-
-
+        
+# 获取文件差异(不完整)
 @app.route('/api/git/diff', methods=['GET'])
 def git_diff():
-    """获取文件差异"""
     try:
         workspace_root = get_workspace_root()
         if not workspace_root:
