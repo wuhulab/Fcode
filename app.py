@@ -122,7 +122,7 @@ def normalize_path(input_path):
 # 谁要是再敢把这种头部函数写到里面，我就拒绝他的分支
 # 渲染主页面
 @app.route('/')
-def index()
+def index():
     return render_template('index.html')
 
 
@@ -152,7 +152,7 @@ def workspace_status():
 
 # 设置工作目录（项目文件夹）
 @app.route('/api/workspace/set', methods=['POST'])
-def set_workspace()
+def set_workspace():
     try:
         data = request.get_json()
         if not data:
