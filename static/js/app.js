@@ -832,7 +832,7 @@ function renderVirtualTab(tab) {
         case 'about': renderAboutContent(virtualContainer); break;
         case 'git': renderGitContent(virtualContainer); break;
         case 'terminal': renderTerminalContent(virtualContainer); break;
-        case 'browser': renderBrowserContent(virtualContainer); break;
+        case 'browser': renderBrowserContent(virtualContainer); browserInit(); break;
         default: virtualContainer.innerHTML = '<div class="virtual-empty">内容加载中...</div>';
     }
     AppState.currentFile = tab.path;
@@ -1143,23 +1143,24 @@ function scrollTerminalToBottom() { /* deprecated, kept for compat */ }
 
 // ========== 浏览器预览 ==========
 function renderBrowserContent(container) {
-    container.innerHTML = '<div class="virtual-page browser-page"><div class="virtual-page-header"><h2>🌐 浏览器预览</h2></div><div class="virtual-page-content"><div class="browser-toolbar"><input type="text" id="browserUrl" placeholder="输入 URL..." class="browser-url-input"><button class="browser-btn" onclick="browserRefresh()">刷新</button><button class="browser-btn" onclick="browserOpenFile()">打开文件</button></div><div class="browser-preview-container"><iframe id="browserPreviewFrame" class="browser-preview-frame" sandbox="allow-scripts allow-same-origin"></iframe><div class="browser-placeholder" id="browserPlaceholder"><div class="placeholder-icon">🌐</div><p>在上方输入 URL 或打开本地 HTML 文件</p></div></div></div></div>';
+    container.innerHTML = '<div class="virtual-page browser-page"><div class="browser-toolbar"><input type="text" id="browserUrl" placeholder="输入 URL..." class="browser-url-input"></div><div class="browser-preview-container"><iframe id="browserPreviewFrame" class="browser-preview-frame" sandbox="allow-scripts allow-same-origin"></iframe><div class="browser-placeholder" id="browserPlaceholder"><div class="placeholder-icon">🌐</div><p>在上方输入 URL 访问网页</p></div></div></div>';
 }
 
 function browserRefresh() {
     var url = document.getElementById('browserUrl').value.trim();
     var frame = document.getElementById('browserPreviewFrame');
     var placeholder = document.getElementById('browserPlaceholder');
-    if (url && frame) { frame.src = url; frame.style.display = 'block'; if (placeholder) placeholder.style.display = 'none'; }
+    if (url && frame) { 
+        if (!url.startsWith('http://') && !url.startsWith('https://')) { url = 'http://' + url; }
+        frame.src = url; frame.style.display = 'block'; if (placeholder) placeholder.style.display = 'none'; 
+    }
 }
 
-function browserOpenFile() {
-    var htmlTab = AppState.openTabs.find(function (t) { return !t.isVirtual && (t.name.endsWith('.html') || t.name.endsWith('.htm')); });
-    if (htmlTab) {
-        var frame = document.getElementById('browserPreviewFrame');
-        var placeholder = document.getElementById('browserPlaceholder');
-        if (frame) { frame.srcdoc = htmlTab.content; frame.style.display = 'block'; if (placeholder) placeholder.style.display = 'none'; document.getElementById('browserUrl').value = htmlTab.name; }
-    } else { showToast('请先打开一个 HTML 文件', 'error'); }
+function browserInit() {
+    var urlInput = document.getElementById('browserUrl');
+    if (urlInput) {
+        urlInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') browserRefresh(); });
+    }
 }
 
 // ========== 全局暴露函数 ==========
@@ -1176,7 +1177,7 @@ window.gitInit = gitInit;
 window.gitRefresh = gitRefresh;
 window.gitCommit = gitCommit;
 window.browserRefresh = browserRefresh;
-window.browserOpenFile = browserOpenFile;
+window.browserInit = browserInit;
 window.showSettings = showSettings;
 window.showAbout = showAbout;
 
