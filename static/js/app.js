@@ -614,7 +614,7 @@ async function runCurrentFile() {
 
 function updateRunButtonState() {
     if (DOM.runBtn) {
-        DOM.runBtn.textContent = AppState.isModified ? '运行●' : '运行';
+        DOM.runBtn.textContent = AppState.isModified ? '运行' : '运行';
         DOM.runBtn.style.backgroundColor = AppState.isModified ? '#cca700' : '';
     }
 }
