@@ -1130,7 +1130,7 @@ def handle_disconnect():
         if sid in _pty_processes:
             _pty_processes[sid]["alive"] = False
             try:
-                _pty_processes[sid]["process"].close()
+                _pty_processes[sid]["process"].cancel_io()
             except Exception:
                 pass
             del _pty_processes[sid]
@@ -1155,7 +1155,7 @@ def handle_terminal_create(data):
         if sid in _pty_processes:
             _pty_processes[sid]["alive"] = False
             try:
-                _pty_processes[sid]["process"].close()
+                _pty_processes[sid]["process"].cancel_io()
             except Exception:
                 pass
             del _pty_processes[sid]
@@ -1282,7 +1282,7 @@ def handle_terminal_kill():
         if sid in _pty_processes:
             _pty_processes[sid]["alive"] = False
             try:
-                _pty_processes[sid]["process"].close()
+                _pty_processes[sid]["process"].cancel_io()
             except Exception:
                 pass
             del _pty_processes[sid]
